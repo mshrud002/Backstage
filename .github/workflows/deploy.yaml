@@ -59,13 +59,27 @@ jobs:
         with:
           version: latest
 
+      - name: Check if KUBECONFIG secret is set
+        id: check_secrets
+        run: |
+          if [ -z "$KUBECONFIG" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "KUBECONFIG secret not set — skipping deploy"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+
       - name: Configure kubeconfig
+        if: steps.check_secrets.outputs.skip != 'true'
         uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
       - name: Deploy with Helm
+        if: steps.check_secrets.outputs.skip != 'true'
         run: |
           helm upgrade --install backstage ./helm/backstage \
             --namespace backstage --create-namespace \
