@@ -1,0 +1,97 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/your-org/backstage
+  tag: latest
+  pullPolicy: Always
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 7007
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: backstage.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+postgresql:
+  enabled: true
+  auth:
+    username: backstage
+    password: backstage
+    database: backstage
+  primary:
+    persistence:
+      size: 8Gi
+    resources:
+      requests:
+        memory: 256Mi
+        cpu: 250m
+      limits:
+        memory: 512Mi
+        cpu: 500m
+
+backstage:
+  appConfig:
+    baseUrl: ""
+    title: Backstage
+  auth:
+    github:
+      clientId: ""
+      clientSecret: ""
+  podLabels: {}
+
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 250m
+  limits:
+    memory: 1Gi
+    cpu: 500m
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+extraEnv: []

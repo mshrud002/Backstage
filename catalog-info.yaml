@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: backstage
+  description: Backstage application
+  tags:
+    - developer-portal
+    - backstage
+spec:
+  type: website
+  lifecycle: production
+  owner: platform-engineering
+  system: developer-portal

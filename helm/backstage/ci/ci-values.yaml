@@ -1,0 +1,12 @@
+# Minimal values for CI testing
+backstage:
+  appConfig:
+    baseUrl: https://backstage.example.com
+    title: Backstage CI Test
+
+postgresql:
+  enabled: true
+  auth:
+    username: backstage
+    password: backstage
+    database: backstage

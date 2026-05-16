@@ -1,0 +1,53 @@
+app:
+  title: Backstage
+  baseUrl: http://localhost:7007
+
+organization:
+  name: My Company
+
+backend:
+  baseUrl: http://localhost:7007
+  listen:
+    port: 7007
+  database:
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST:-localhost}
+      port: ${POSTGRES_PORT:-5432}
+      user: ${POSTGRES_USER:-postgres}
+      password: ${POSTGRES_PASSWORD:-postgres}
+      database: ${POSTGRES_DB:-backstage}
+  cors:
+    origin: http://localhost:7007
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  reading:
+    allow:
+      - host: '*'
+
+integrations: {}
+
+proxy: {}
+
+techdocs:
+  builder: local
+  generator:
+    runIn: docker
+  publisher:
+    type: local
+
+auth:
+  environment: development
+  providers: {}
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location]
+  locations:
+    - type: file
+      target: ../../catalog-info.yaml
+      rules:
+        - allow: [Component, System, API, Resource, Location]

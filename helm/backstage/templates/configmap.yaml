@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "backstage.fullname" . }}-config
+  labels:
+    {{- include "backstage.labels" . | nindent 4 }}
+data:
+  app-config.yaml: |
+    app:
+      title: {{ .Values.backstage.appConfig.title | quote }}
+      baseUrl: {{ required "app.baseUrl is required" .Values.backstage.appConfig.baseUrl | quote }}
+
+    organization:
+      name: {{ .Values.backstage.appConfig.organization | default "My Company" | quote }}
+
+    backend:
+      baseUrl: {{ required "app.baseUrl is required" .Values.backstage.appConfig.baseUrl | quote }}
+      listen:
+        port: {{ .Values.service.port }}
+      database:
+        client: pg
+        connection:
+          host: {{ .Release.Name }}-postgresql
+          port: 5432
+          user: {{ .Values.postgresql.auth.username }}
+          password: {{ .Values.postgresql.auth.password }}
+          database: {{ .Values.postgresql.auth.database }}
+      cors:
+        origin: {{ required "app.baseUrl is required" .Values.backstage.appConfig.baseUrl | quote }}
+        methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+        credentials: true
+      reading:
+        allow:
+          - host: "*"
+
+    integrations:
+      github:
+        - host: github.com
+          apps: []
+
+    auth:
+      environment: production
+      providers:
+        github:
+          production:
+            clientId: ${AUTH_GITHUB_CLIENT_ID}
+            clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, API, Resource, Location]
+      locations:
+        - type: url
+          target: https://github.com/{{ .Values.backstage.appConfig.githubOrg | default "your-org" }}/backstage/blob/main/catalog-info.yaml
+          rules:
+            - allow: [Component, System, API, Resource, Location]

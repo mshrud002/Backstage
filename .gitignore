@@ -42,3 +42,17 @@ terraform.rc
 # Optional: ignore plan files saved before destroying Terraform configuration
 # Uncomment the line below if you want to ignore planout files.
 # planout
+
+# Node / Backstage
+node_modules/
+.pnp
+.pnp.js
+yarn-error.log
+dist-types/
+dist/
+coverage/
+*.tsbuildinfo
+.backstage/
+.env
+.env.local
+.env.production
