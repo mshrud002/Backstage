@@ -100,8 +100,8 @@ resource "kubernetes_config_map" "app_config" {
         providers = {
           github = {
             production = {
-              clientId     = "${AUTH_GITHUB_CLIENT_ID}"
-              clientSecret = "${AUTH_GITHUB_CLIENT_SECRET}"
+              clientId     = "$${AUTH_GITHUB_CLIENT_ID}"
+              clientSecret = "$${AUTH_GITHUB_CLIENT_SECRET}"
             }
           }
         }
