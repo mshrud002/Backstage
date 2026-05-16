@@ -1,4 +1,4 @@
-name: Build and Deploy Backstage
+name: Validate and Deploy Backstage
 
 on:
   push:
@@ -7,50 +7,47 @@ on:
   pull_request:
     branches: [main]
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to Container Registry
-        uses: docker/login-action@v3
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          version: latest
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=short
-            type=ref,event=branch
-            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Helm dependency update
+        run: helm dependency update ./helm/backstage
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      - name: Helm lint
+        run: helm lint ./helm/backstage --set backstage.appConfig.baseUrl=https://example.com
+
+      - name: Helm template
+        run: helm template backstage ./helm/backstage --set backstage.appConfig.baseUrl=https://example.com --set postgresql.enabled=false
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
-          context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          terraform_version: 1.6
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+        working-directory: terraform
+
+      - name: Terraform init
+        run: terraform init
+        working-directory: terraform
+
+      - name: Terraform validate
+        run: terraform validate
+        working-directory: terraform
 
   deploy:
     if: github.ref == 'refs/heads/main'
-    needs: build
+    needs: validate
     runs-on: ubuntu-latest
     environment: production
 
@@ -72,7 +69,7 @@ jobs:
         run: |
           helm upgrade --install backstage ./helm/backstage \
             --namespace backstage --create-namespace \
-            --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+            --set image.repository=${{ secrets.IMAGE_REPOSITORY }} \
             --set image.tag=${{ github.sha }} \
             --set backstage.appConfig.baseUrl=${{ secrets.APP_BASE_URL }} \
             --set backstage.auth.github.clientId=${{ secrets.AUTH_GITHUB_CLIENT_ID }} \
