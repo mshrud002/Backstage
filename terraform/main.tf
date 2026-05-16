@@ -31,7 +31,7 @@ resource "random_password" "postgres" {
 resource "kubernetes_namespace" "this" {
   count = var.create_namespace ? 1 : 0
   metadata {
-    name = var.namespace
+    name   = var.namespace
     labels = local.labels
   }
 }
@@ -108,7 +108,7 @@ resource "kubernetes_config_map" "app_config" {
       }
       catalog = {
         import = {
-          entityFilename       = "catalog-info.yaml"
+          entityFilename        = "catalog-info.yaml"
           pullRequestBranchName = "backstage-integration"
         }
         rules = [
@@ -116,7 +116,7 @@ resource "kubernetes_config_map" "app_config" {
         ]
         locations = [
           {
-            type = "url"
+            type   = "url"
             target = "https://github.com/${var.github_org}/backstage/blob/main/catalog-info.yaml"
             rules = [
               { allow = ["Component", "System", "API", "Resource", "Location"] }
@@ -325,9 +325,9 @@ resource "kubernetes_ingress_v1" "backstage" {
   count = var.create_ingress ? 1 : 0
 
   metadata {
-    name      = var.name
-    namespace = var.namespace
-    labels    = local.labels
+    name        = var.name
+    namespace   = var.namespace
+    labels      = local.labels
     annotations = var.ingress_annotations
   }
 
@@ -340,7 +340,7 @@ resource "kubernetes_ingress_v1" "backstage" {
         host = rule.value
         http {
           path {
-            path     = "/"
+            path      = "/"
             path_type = "Prefix"
             backend {
               service {
